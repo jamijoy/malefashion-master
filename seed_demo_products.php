@@ -9,22 +9,38 @@ if (!$conn) {
 
 $productCount = $conn->query('SELECT COUNT(*) AS total FROM products');
 if ($productCount && $productCount->fetch_assoc()['total'] > 0) {
-    echo "Products already exist.\n";
-    exit(0);
+    $conn->query('DELETE FROM product_images');
+    $conn->query('DELETE FROM products');
+    echo "Existing demo product records reset. Re-seeding product records...\n";
 }
 
 $merchantId = null;
 $brandId = null;
 $categoryId = null;
 
-$conn->query("INSERT INTO merchants (name, email, phone, address, commission, status) VALUES ('SOHI Merchant', 'merchant@sohi.com', '01700000000', 'Dhaka, Bangladesh', 10.00, 1)");
-$merchantId = $conn->insert_id;
+$merchantResult = $conn->query("SELECT id FROM merchants WHERE email = 'merchant@sohi.com' LIMIT 1");
+if ($merchantResult && $merchantResult->num_rows > 0) {
+    $merchantId = (int) $merchantResult->fetch_assoc()['id'];
+} else {
+    $conn->query("INSERT INTO merchants (name, email, phone, address, commission, status) VALUES ('SOHI Merchant', 'merchant@sohi.com', '01700000000', 'Dhaka, Bangladesh', 10.00, 1)");
+    $merchantId = $conn->insert_id;
+}
 
-$conn->query("INSERT INTO brands (name, slug, logo, status) VALUES ('SOHI', 'sohi', 'img/logo.png', 1)");
-$brandId = $conn->insert_id;
+$brandResult = $conn->query("SELECT id FROM brands WHERE slug = 'sohi' LIMIT 1");
+if ($brandResult && $brandResult->num_rows > 0) {
+    $brandId = (int) $brandResult->fetch_assoc()['id'];
+} else {
+    $conn->query("INSERT INTO brands (name, slug, logo, status) VALUES ('SOHI', 'sohi', 'img/logo.png', 1)");
+    $brandId = $conn->insert_id;
+}
 
-$conn->query("INSERT INTO categories (name, slug, description, status) VALUES ('Women', 'women', 'Women fashion collection', 1)");
-$categoryId = $conn->insert_id;
+$categoryResult = $conn->query("SELECT id FROM categories WHERE slug = 'women' LIMIT 1");
+if ($categoryResult && $categoryResult->num_rows > 0) {
+    $categoryId = (int) $categoryResult->fetch_assoc()['id'];
+} else {
+    $conn->query("INSERT INTO categories (name, slug, description, status) VALUES ('Women', 'women', 'Women fashion collection', 1)");
+    $categoryId = $conn->insert_id;
+}
 
 $products = [
     ['name' => 'Classic Denim Jacket', 'slug' => 'classic-denim-jacket', 'sku' => 'SOHI-001', 'price' => 4200.00, 'sale_price' => 3600.00, 'featured' => 1, 'image' => 'img/product/product-1.jpg'],
@@ -41,7 +57,7 @@ foreach ($products as $product) {
     $shortDescription = 'Premium fashion item for everyday style.';
     $description = 'A premium fashion product designed for modern living and standout style.';
     $stmt->bind_param(
-        'iiiissssddi',
+        'iiisssssddi',
         $categoryId,
         $brandId,
         $merchantId,
