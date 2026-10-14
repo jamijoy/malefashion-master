@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/config/database.php';
-$products = getActiveProducts(4, true);
+$products = getActiveProducts(8);
 ?>
 <!DOCTYPE html>
 <html lang="zxx">
@@ -135,7 +135,7 @@ $products = getActiveProducts(4, true);
             <div class="row">
                 <div class="col-lg-12">
                     <ul class="filter__controls">
-                        <li class="active" data-filter="*">Featured Products</li>
+                        <li class="active" data-filter="*">Latest Products</li>
                     </ul>
                 </div>
             </div>
